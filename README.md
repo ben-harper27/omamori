@@ -17,6 +17,9 @@ Every payment goes through one deterministic `decide()` function ([packages/shar
 
 - Code: [packages/shared/src/ens.ts](packages/shared/src/ens.ts), [scripts/spikes/1-ensv2.ts](scripts/spikes/1-ensv2.ts)
 - Features used: UserRegistry subregistry, per-agent PermissionedResolver, Enhanced Access Control scoped to a single text record key, non-transferable subname, revocation via `unregister`.
+- Sellers have ENS names too (`pharmacy.omamori-demo.eth`, ...). The agent only treats a seller as its name if the name's `addr` equals the payTo it is asked to pay.
+- Seller-side check ([packages/shared/src/payer-check.ts](packages/shared/src/payer-check.ts)): sellers refuse a payer whose ENS name is revoked or whose `addr` is not the paying wallet.
+- Family controls: [scripts/family.ts](scripts/family.ts) `revoke | restore | status`.
 
 ## Intercepta
 
