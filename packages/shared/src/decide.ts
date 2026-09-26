@@ -2,11 +2,11 @@ import type { Decision, DecisionInput, RiskLevel, Screening } from "./types";
 
 function reasonsAtLevel(screening: Screening, level: RiskLevel): string[] {
   const verdicts = [screening.payTo, screening.token, screening.authorization];
-  const reasons: string[] = [];
+  const reasons = new Set<string>();
   for (const verdict of verdicts) {
-    if (verdict.level === level) reasons.push(...verdict.reasons);
+    if (verdict.level === level) verdict.reasons.forEach((reason) => reasons.add(reason));
   }
-  return reasons;
+  return [...reasons];
 }
 
 function hasLevel(screening: Screening, level: RiskLevel): boolean {

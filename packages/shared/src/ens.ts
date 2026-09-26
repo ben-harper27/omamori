@@ -97,3 +97,11 @@ export async function readPolicy(client: PublicClient, name: string): Promise<Po
 
   return { maxPerPayment, approvalThreshold, monthlyCap, approver, allowlist: parseAllowlist(records[POLICY_KEYS.allowlist]) };
 }
+
+// A seller only counts as its ENS name if that name's addr record is the payTo it asked us to pay.
+export async function verifySellerName(client: PublicClient, ensName: string, payTo: Address): Promise<string> {
+  const normalized = normalize(ensName);
+  const resolved = await client.getEnsAddress({ name: normalized }).catch(() => null);
+  if (resolved && resolved.toLowerCase() === payTo.toLowerCase()) return normalized;
+  return `unverified:${normalized}`;
+}
