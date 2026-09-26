@@ -43,6 +43,12 @@ describe("decide", () => {
     expect(decision.details).toEqual(["Linked to phishing"]);
   });
 
+  test("rule 2 says screening was unavailable rather than blaming Intercepta", () => {
+    const unavailable = { level: "high" as const, reasons: ["Screening unavailable: timeout"] };
+    const decision = decide(input({ screening: { payTo: unavailable, token: unavailable, authorization: unavailable } }));
+    expect(decision).toMatchObject({ outcome: "refuse", rule: 2, reason: "Screening unavailable, refusing to pay unscreened" });
+  });
+
   test("rule 2 wins over an amount that would also break limits", () => {
     const screening = { ...cleanScreening, token: { level: "high" as const, reasons: ["Fake USDC"] } };
     const base = input({ screening });

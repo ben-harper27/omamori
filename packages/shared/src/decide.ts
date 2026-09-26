@@ -1,5 +1,7 @@
 import type { Decision, DecisionInput, RiskLevel, Screening } from "./types";
 
+export const SCREENING_UNAVAILABLE = "Screening unavailable";
+
 function reasonsAtLevel(screening: Screening, level: RiskLevel): string[] {
   const verdicts = [screening.payTo, screening.token, screening.authorization];
   const reasons = new Set<string>();
@@ -18,7 +20,10 @@ export function decide({ terms, policy, monthSpend, screening }: DecisionInput):
     return { outcome: "refuse", rule: 1, reason: "Agent is not authorised by the family", details: [] };
   }
   if (hasLevel(screening, "high")) {
-    return { outcome: "refuse", rule: 2, reason: "Flagged as high risk by Intercepta", details: reasonsAtLevel(screening, "high") };
+    const details = reasonsAtLevel(screening, "high");
+    const unscreened = details.every((detail) => detail.startsWith(SCREENING_UNAVAILABLE));
+    const reason = unscreened ? "Screening unavailable, refusing to pay unscreened" : "Flagged as high risk by Intercepta";
+    return { outcome: "refuse", rule: 2, reason, details };
   }
   if (terms.amount > policy.maxPerPayment) {
     return { outcome: "refuse", rule: 3, reason: "Over the family's hard limit", details: [] };

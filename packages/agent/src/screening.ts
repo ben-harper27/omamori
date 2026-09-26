@@ -5,6 +5,7 @@ import {
   tokenVerdict,
   type InterceptaClient,
   type PaymentTerms,
+  SCREENING_UNAVAILABLE,
   type Screening,
   type ScreeningVerdict,
 } from "../../shared/src";
@@ -19,7 +20,7 @@ const CANONICAL_USDC: Record<string, { testnet: Address; mainnet: Address; mainn
 };
 
 function unavailable(error: unknown): ScreeningVerdict {
-  return { level: "high", reasons: [`Screening unavailable, refusing to pay unscreened: ${(error as Error).message}`] };
+  return { level: "high", reasons: [`${SCREENING_UNAVAILABLE}: ${(error as Error).message}`] };
 }
 
 async function safely(check: () => Promise<ScreeningVerdict>): Promise<ScreeningVerdict> {
