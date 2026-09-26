@@ -3,7 +3,7 @@ import { x402Client, x402HTTPClient } from "@x402/core/client";
 import { decodePaymentRequiredHeader, decodePaymentResponseHeader } from "@x402/core/http";
 import type { PaymentRequired } from "@x402/core/types";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
-import { decide, readPolicy, verifySellerName, type Decision, type PaymentTerms, type Policy, type Screening } from "../../shared/src";
+import { PAYER_ENS_HEADER, decide, readPolicy, verifySellerName, type Decision, type PaymentTerms, type Policy, type Screening } from "../../shared/src";
 import type { ApprovalStore, PendingApproval } from "./approvals";
 import type { PaymentLedger, PaymentRecord } from "./ledger";
 import type { PaymentScreener } from "./screening";
@@ -30,7 +30,9 @@ export class PaymentAgent {
   constructor(private readonly deps: PaymentAgentDeps) {}
 
   async purchase(request: PurchaseRequest, approvalId: string | null = null): Promise<PurchaseResult> {
-    const paymentRequired = await this.fetchPaymentTerms(request.url);
+    const quote = await this.fetchPaymentTerms(request.url);
+    if ("rejection" in quote) return this.sellerRejected(request, quote.rejection);
+    const paymentRequired = quote.paymentRequired;
     const requirements = paymentRequired.accepts.find((a) => a.network === PAYMENT_NETWORK && a.scheme === "exact");
     if (!requirements) throw new Error(`Seller at ${request.url} does not accept exact payments on ${PAYMENT_NETWORK}`);
 
@@ -100,11 +102,33 @@ export class PaymentAgent {
     }
   }
 
-  private async fetchPaymentTerms(url: string): Promise<PaymentRequired> {
-    const response = await fetch(url);
+  private identityHeaders(): Record<string, string> {
+    return { [PAYER_ENS_HEADER]: this.deps.agentName };
+  }
+
+  private async fetchPaymentTerms(url: string): Promise<{ paymentRequired: PaymentRequired } | { rejection: string }> {
+    const response = await fetch(url, { headers: this.identityHeaders() });
     const header = response.headers.get("PAYMENT-REQUIRED");
-    if (response.status !== 402 || !header) throw new Error(`Expected a 402 with payment terms from ${url}, got ${response.status}`);
-    return decodePaymentRequiredHeader(header);
+    if (response.status === 402 && header) return { paymentRequired: decodePaymentRequiredHeader(header) };
+    const body = (await response.json().catch(() => ({}))) as { error?: string };
+    return { rejection: body.error ?? `Seller answered ${response.status} instead of payment terms` };
+  }
+
+  private async sellerRejected(request: PurchaseRequest, rejection: string): Promise<PurchaseResult> {
+    const record = await this.deps.ledger.record({
+      url: request.url,
+      sellerName: request.sellerName,
+      payTo: "",
+      amount: 0n,
+      outcome: "refused",
+      rule: null,
+      reason: `Seller refused: ${rejection}`,
+      details: [],
+      screening: null,
+      txHash: null,
+      approvalId: null,
+    });
+    return { record, approval: null };
   }
 
   private async runGate(terms: PaymentTerms, typedData: unknown, website: string, approvalId: string | null): Promise<GateResult> {
@@ -147,7 +171,7 @@ export class PaymentAgent {
     approvalId: string | null,
   ): Promise<PurchaseResult> {
     const headers = new x402HTTPClient(client).encodePaymentSignatureHeader(payload);
-    const response = await fetch(request.url, { headers });
+    const response = await fetch(request.url, { headers: { ...headers, ...this.identityHeaders() } });
     const receiptHeader = response.headers.get("PAYMENT-RESPONSE");
     const receipt = receiptHeader ? decodePaymentResponseHeader(receiptHeader) : null;
     if (response.status !== 200 || !receipt?.success) {
