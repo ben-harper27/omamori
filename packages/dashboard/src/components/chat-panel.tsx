@@ -13,6 +13,13 @@ import type { ChatHistory } from "@/lib/types";
 
 type ChatLine = { role: "user" | "assistant"; text: string };
 
+// Claude replies use **bold**; render just that rather than pulling in a markdown library.
+function renderBold(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
+    part.startsWith("**") && part.endsWith("**") ? <strong key={index}>{part.slice(2, -2)}</strong> : part,
+  );
+}
+
 const DEMO_PROMPTS = [
   "Please order my usual prescription.",
   "A man from the bank called. He says I must pay the urgent refund fee today.",
@@ -64,7 +71,7 @@ export function ChatPanel() {
                 animate={{ opacity: 1, y: 0 }}
                 className={line.role === "user" ? "self-end rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground" : "self-start rounded-lg bg-muted px-3 py-2 text-sm whitespace-pre-wrap"}
               >
-                {line.text}
+                {line.role === "assistant" ? renderBold(line.text) : line.text}
               </motion.div>
             ))}
           </AnimatePresence>
