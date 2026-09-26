@@ -77,3 +77,11 @@ TypeScript monorepo (bun). A pure `decide()` function with a unit test per rule 
 ## Pre-existing work
 
 None. All project work started at the event; the spec in `notes/spec.md` was written at the start of hacking. Public libraries only (viem, x402, Next.js, shadcn, Anthropic SDK).
+
+## Intercepta prize: updated text (replace the "key had not arrived" version)
+
+**Why applicable:**
+The paying agent screens every x402 payment live before signing: payTo with Quick Scan Address, the token with Scan Token, and the EIP-3009 authorization with Scan Message. The verdict drives the decision: high risk refuses with Intercepta's reasons shown, warnings escalate to the family, and unavailable screening refuses (fail closed). Live on the deployed site: the scam seller's payTo (the OFAC-listed Ronin exploiter) comes back toxicScore 100 (known_scammer, sanction_address, blacklist) and its authorization KNOWN_MALICIOUS, so the payment is refused before signing; clean payments settle on Base Sepolia. Legit sellers also Deep Scan the payer before accepting.
+
+**Feedback:**
+Time to first call was minutes once we had a key, but the sandbox key arrived by email many hours into the hackathon, so everything was first built against the docs; instant dashboard keys would help. Biggest gotcha: Scan Message documents `message` as a JSON string, but a stringified typed-data message is silently parsed as empty and scored Low. Sent as an object it recognises EIP-3009 TransferWithAuthorization and flags a malicious payTo as High / KNOWN_MALICIOUS. No example responses or documented scale for toxicScore/trait risk; Quick Scan 404s on contract addresses; the docs' example address isn't flagged, so a documented known-bad test address would help.
