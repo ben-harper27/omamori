@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { config, createPaymentAgent } from "../packages/agent/src";
+import { createPaymentAgent } from "../packages/agent/src";
 import { findSeller } from "../packages/sellers/src/catalog";
 
 const [sellerId, ...flags] = process.argv.slice(2);
@@ -7,7 +7,7 @@ if (!sellerId) throw new Error("Usage: bun scripts/purchase.ts <pharmacy|grocery
 
 const seller = findSeller(sellerId);
 const agent = createPaymentAgent();
-const { record, approval } = await agent.purchase({ url: `${config.sellersBaseUrl}${seller.path}`, sellerName: seller.ensName });
+const { record, approval } = await agent.purchase({ url: `${process.env.SELLERS_BASE_URL ?? "http://localhost:3000"}${seller.path}`, sellerName: seller.ensName });
 
 function show(label: string, value: unknown) {
   console.log(label.padEnd(12), typeof value === "string" ? value : JSON.stringify(value, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2));

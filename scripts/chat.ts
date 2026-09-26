@@ -1,12 +1,15 @@
 #!/usr/bin/env bun
-import { createAssistant, createPaymentAgent } from "../packages/agent/src";
+import { createAssistant, createPaymentAgent, type ChatHistory } from "../packages/agent/src";
 
 const paymentAgent = createPaymentAgent();
-const assistant = createAssistant(paymentAgent);
+const assistant = createAssistant(paymentAgent, process.env.SELLERS_BASE_URL ?? "http://localhost:3000");
+let history: ChatHistory = [];
 
 async function turn(message: string) {
   console.log(`\nobaachan > ${message}`);
-  console.log(`omamori  > ${await assistant.send(message)}`);
+  const result = await assistant.send(history, message);
+  history = result.history;
+  console.log(`omamori  > ${result.reply}`);
 }
 
 const scripted = process.argv.slice(2);

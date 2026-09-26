@@ -6,8 +6,16 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["bun"],
+    "types": [
+      "bun"
+    ],
     "resolveJsonModule": true
   },
-  "include": ["packages/*/src", "scripts"]
+  "include": [
+    "packages/*/src",
+    "scripts"
+  ],
+  "exclude": [
+    "packages/dashboard"
+  ]
 }

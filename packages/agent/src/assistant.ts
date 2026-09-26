@@ -29,14 +29,16 @@ function describePurchase(result: Awaited<ReturnType<PaymentAgent["purchase"]>>)
   });
 }
 
+export type ChatHistory = Anthropic.Beta.BetaMessageParam[];
+
 export type AssistantDeps = {
   paymentAgent: PaymentAgent;
+  sellersBaseUrl: string;
   updateOwnRecord: (key: string, value: string) => Promise<SelfUpdateResult>;
 };
 
 export class Assistant {
   private readonly client = new Anthropic();
-  private history: Anthropic.Beta.BetaMessageParam[] = [];
   private readonly tools;
 
   constructor(deps: AssistantDeps) {
@@ -53,7 +55,7 @@ export class Assistant {
         inputSchema: z.object({ seller_id: z.enum(SELLERS.map((s) => s.id) as [string, ...string[]]) }),
         run: async ({ seller_id }) => {
           const seller = findSeller(seller_id);
-          const result = await deps.paymentAgent.purchase({ url: `${process.env.SELLERS_BASE_URL ?? "http://localhost:4021"}${seller.path}`, sellerName: seller.ensName });
+          const result = await deps.paymentAgent.purchase({ url: `${deps.sellersBaseUrl}${seller.path}`, sellerName: seller.ensName });
           return describePurchase(result);
         },
       }),
@@ -74,7 +76,8 @@ export class Assistant {
     ];
   }
 
-  async send(userMessage: string): Promise<string> {
+  // Stateless: the caller keeps the history, so this works across serverless invocations.
+  async send(history: ChatHistory, userMessage: string): Promise<{ reply: string; history: ChatHistory }> {
     const runner = this.client.beta.messages.toolRunner({
       model: MODEL,
       max_tokens: 16000,
@@ -82,17 +85,17 @@ export class Assistant {
       fallbacks: "default",
       system: SYSTEM_PROMPT,
       tools: this.tools,
-      messages: [...this.history, { role: "user", content: userMessage }],
+      messages: [...history, { role: "user", content: userMessage }],
     });
     const finalMessage = await runner.runUntilDone();
-    this.history = [...runner.params.messages];
-    const last = this.history.at(-1);
-    if (last?.role !== "assistant") this.history.push({ role: "assistant", content: finalMessage.content });
+    const nextHistory = [...runner.params.messages];
+    if (nextHistory.at(-1)?.role !== "assistant") nextHistory.push({ role: "assistant", content: finalMessage.content });
 
-    if (finalMessage.stop_reason === "refusal") return "(The assistant declined to respond.)";
-    return finalMessage.content
+    if (finalMessage.stop_reason === "refusal") return { reply: "(The assistant declined to respond.)", history: nextHistory };
+    const reply = finalMessage.content
       .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text")
       .map((block) => block.text)
       .join("\n");
+    return { reply, history: nextHistory };
   }
 }
