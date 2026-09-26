@@ -58,10 +58,12 @@ Every payment is screened live before it is signed; the verdicts drive rules 2 a
 - [scripts/spikes/3-intercepta.ts](scripts/spikes/3-intercepta.ts): live spike that saves fixtures
 
 **API feedback:**
-- Time to first call: _TBD (sandbox key arrived by email after a wait, which blocked integration during the hackathon)_.
-- No example response bodies and no documented scale for `toxicScore` or trait `risk`, so the verdict mapping had to be built from enums and trait names.
-- Scan Message's `messageType` enum only lists Permit variants; it's unclear whether EIP-3009 `TransferWithAuthorization`, which is what x402 signs, is understood.
-- Address scans take no chain id, so it's unclear which chains they cover; `message` must be a stringified typed-data object, which is easy to get wrong.
+- Time to first call: minutes once we had a key, but the sandbox key arrived by email many hours into the hackathon, so all integration was written against the docs first. Instant keys from a dashboard would help a lot.
+- Biggest gotcha: Scan Message documents `message` as a JSON string, but a stringified typed-data message is silently parsed as empty and scored Low. Sent as an object, it recognises EIP-3009 `TransferWithAuthorization` and flags a malicious payTo as High / `KNOWN_MALICIOUS`.
+- No example response bodies or documented scale for `toxicScore` or trait `risk`; real data (toxicScore 100 plus trait names) made the mapping easy once we had it.
+- Quick Scan returns 404 for contract addresses, and address scans take no chain id; the docs' example address isn't flagged, so a documented known-bad test address would help.
+
+**Live proof:** the scam seller's payTo is the OFAC-listed Ronin bridge exploiter address. Intercepta returns toxicScore 100 (known_scammer, sanction_address, blacklist) and flags the authorization as KNOWN_MALICIOUS, so the agent refuses before signing. Clean payments settle, for example [0x33cb…5018](https://sepolia.basescan.org/tx/0x33cbebe4f446cd765377d1ab5a73e56641c8180319d24972e591a06f679e5018).
 
 ## World ID for Agents
 
