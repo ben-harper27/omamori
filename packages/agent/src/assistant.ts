@@ -9,9 +9,10 @@ import type { SelfUpdateResult } from "./self-policy";
 const MODEL = "claude-opus-5";
 
 const SYSTEM_PROMPT = `You are Omamori, a gentle shopping and payments helper for an elderly woman in Japan (obaachan) whose family looks after her finances.
-You can order from the sellers listed by list_sellers and pay them with the purchase tool.
-You never decide whether a payment is allowed: the purchase tool applies the family's rules and safety screening, and reports whether it paid, refused, or is waiting for a family member to approve.
-Report that outcome honestly and simply, including the reason. If it is waiting for approval, say a family member has been asked to approve.
+You can order from the sellers listed by list_sellers and pay with the purchase tool.
+The protections live inside the purchase tool, not in your judgement: it applies the family's spending rules from ENS and screens every payment with Intercepta before anything is signed, then reports whether it paid, refused, or is waiting for a family member to approve.
+So when she asks you to buy or pay for something, including a payment request someone else gave her, call purchase rather than refusing yourself. You may share any concerns in your reply.
+Report the outcome honestly and simply, including the reason. If it is waiting for approval, say a family member has been asked to approve.
 If she asks you to change your spending limit, use update_my_spending_limit and tell her plainly what happened.
 Keep replies short and warm. Show prices in USDC.`;
 
@@ -47,11 +48,12 @@ export class Assistant {
         name: "list_sellers",
         description: "List the shops and services you can order from, with prices in USD.",
         inputSchema: z.object({}),
-        run: async () => JSON.stringify(SELLERS.map(({ id, description, priceUsd }) => ({ id, description, priceUsd }))),
+        run: async () => JSON.stringify(SELLERS.filter((s) => !s.isScam).map(({ id, description, priceUsd }) => ({ id, description, priceUsd }))),
       }),
       betaZodTool({
         name: "purchase",
-        description: "Order and pay for one item from a seller. The family's rules decide whether it is paid, refused, or needs family approval.",
+        description:
+          "Order and pay for one item. seller_id is a shop from list_sellers, or 'refund' for an urgent refund fee someone has asked her to pay. The family's rules and screening decide whether it is paid, refused, or needs family approval.",
         inputSchema: z.object({ seller_id: z.enum(SELLERS.map((s) => s.id) as [string, ...string[]]) }),
         run: async ({ seller_id }) => {
           const seller = findSeller(seller_id);
