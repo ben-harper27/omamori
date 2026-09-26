@@ -7,7 +7,7 @@ Deadline: **Sunday 27 Sep 2026, 09:00 JST**. Submitting anything before the dead
 **Submitted** on the Hacker Dashboard (Partner Prizes only: World, ENS, Intercepta; Building from Scratch). Editable until 09:00 JST.
 
 Still to do before the deadline:
-- [x] Intercepta key: live screening running on production, README updated
+- [x] Intercepta key: live screening running on production, README and ETHGlobal prize text updated
 - [ ] Upload the demo video (Video step)
 - [ ] Optionally switch submission type to Top 10 Finalist if presenting live
 - [ ] "Continuing this project" question was left blank (optional)
