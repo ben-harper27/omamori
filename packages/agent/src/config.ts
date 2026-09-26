@@ -8,6 +8,7 @@ function required(name: string): string {
 export function getConfig() {
   return {
     sepoliaRpcUrl: required("SEPOLIA_RPC_URL"),
+    baseSepoliaRpcUrl: process.env.BASE_SEPOLIA_RPC_URL ?? "https://base-sepolia-rpc.publicnode.com",
     agentPrivateKey: required("AGENT_PRIVATE_KEY") as `0x${string}`,
     agentName: required("OMAMORI_AGENT_NAME"),
     databaseUrl: required("DATABASE_URL"),

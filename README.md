@@ -28,7 +28,7 @@ Every payment passes through one pure function, [`decide()`](packages/shared/src
 | 1 | Agent's ENS name missing or revoked | Refuse |
 | 2 | Intercepta flags payTo, token or authorization as high risk (or screening is unavailable) | Refuse |
 | 3 | Amount above `omamori.maxPerPayment` | Refuse |
-| 4 | Month spend plus amount above `omamori.monthlyCap` | Refuse |
+| 4 | Month spend plus amount above `omamori.monthlyCap` (the larger of the ledger and the agent wallet's onchain USDC outflow this month) | Refuse |
 | 5 | Seller not on `omamori.allowlist` (ENS name must resolve to the payTo) | Ask family |
 | 6 | Intercepta warnings | Ask family |
 | 7 | Amount above `omamori.approvalThreshold` | Ask family |

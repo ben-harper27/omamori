@@ -6,6 +6,7 @@ import { ExactEvmScheme } from "@x402/evm/exact/client";
 import { PAYER_ENS_HEADER, decide, readPolicy, verifySellerName, type Decision, type PaymentTerms, type Policy, type Screening } from "../../shared/src";
 import type { ApprovalStore, PendingApproval } from "./approvals";
 import type { PaymentLedger, PaymentRecord } from "./ledger";
+import type { OnchainSpend } from "./onchain-spend";
 import type { PaymentScreener } from "./screening";
 import type { WorldApprovalClient } from "./world-approval";
 
@@ -24,6 +25,7 @@ export type PaymentAgentDeps = {
   ledger: PaymentLedger;
   approvals: ApprovalStore;
   world: WorldApprovalClient | null;
+  onchainSpend: OnchainSpend | null;
 };
 
 export class PaymentAgent {
@@ -132,16 +134,29 @@ export class PaymentAgent {
   }
 
   private async runGate(terms: PaymentTerms, typedData: unknown, website: string, approvalId: string | null): Promise<GateResult> {
-    const { ensClient, agentName, account, screener, ledger, approvals } = this.deps;
-    const [policy, screening] = await Promise.all([
+    const { ensClient, agentName, account, screener, approvals } = this.deps;
+    const [policy, screening, monthSpend] = await Promise.all([
       readPolicy(ensClient, agentName),
       screener.screen(terms, typedData, account.address, website),
+      this.monthSpend(),
     ]);
-    const decision = decide({ terms, policy, monthSpend: await ledger.monthSpend(), screening });
+    const decision = decide({ terms, policy, monthSpend, screening });
     if (decision.outcome === "ask_family" && approvalId && (await approvals.consume(approvalId, terms))) {
       return { policy, screening, decision: { ...decision, outcome: "pay", reason: `Family approved via World ID (${decision.reason})` } };
     }
     return { policy, screening, decision };
+  }
+
+  // The ledger can only raise the figure, never lower it below what the chain shows was actually paid.
+  private async monthSpend(): Promise<bigint> {
+    const [ledgerSpend, chainSpend] = await Promise.all([
+      this.deps.ledger.monthSpend(),
+      this.deps.onchainSpend?.thisMonth().catch((error: Error) => {
+        console.warn(`Onchain spend unavailable, using ledger: ${error.message}`);
+        return 0n;
+      }) ?? 0n,
+    ]);
+    return ledgerSpend > chainSpend ? ledgerSpend : chainSpend;
   }
 
   private async handleNotPaid(request: PurchaseRequest, terms: PaymentTerms, gate: GateResult, approvalId: string | null): Promise<PurchaseResult> {
