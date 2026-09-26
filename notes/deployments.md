@@ -54,3 +54,7 @@ Registered by `scripts/setup-sellers.ts` from the family wallet (demo operator).
 | Scam seller | `refund-desk.eth` — deliberately unregistered, so it always shows as `unverified:` |
 
 `omamori.allowlist` on `obaachan.tanaka.eth` = the three legit seller names.
+
+## Beat 4 proof
+
+Agent key tried to raise `omamori.maxPerPayment` to 999 USDC; reverted onchain: https://sepolia.etherscan.io/tx/0x9d73174846993e7d1e070f5a3584921afd283c907faace638115326ce440369c
