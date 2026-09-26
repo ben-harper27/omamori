@@ -2,7 +2,7 @@
 
 A payment agent for elderly people whose spending rules are set by their family in ENSv2, screened by Intercepta before every signature, and escalated to the family through World ID for Agents. Built at ETHGlobal Tokyo 2026.
 
-Live demo: _TBD_
+Live demo: https://omamori-tokyo.vercel.app
 
 ## How it works
 

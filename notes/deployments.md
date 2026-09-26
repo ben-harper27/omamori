@@ -58,3 +58,9 @@ Registered by `scripts/setup-sellers.ts` from the family wallet (demo operator).
 ## Beat 4 proof
 
 Agent key tried to raise `omamori.maxPerPayment` to 999 USDC; reverted onchain: https://sepolia.etherscan.io/tx/0x9d73174846993e7d1e070f5a3584921afd283c907faace638115326ce440369c
+
+## Vercel
+
+- Project `omamori-tokyo` (team benharper27s-projects), root dir `packages/dashboard`
+- Production: https://omamori-tokyo.vercel.app
+- Neon Postgres `omamori-db` via Vercel Marketplace (`DATABASE_URL`)
