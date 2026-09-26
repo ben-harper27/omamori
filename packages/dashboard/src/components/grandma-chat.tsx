@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { ApprovalUpdates } from "./approval-updates";
 import type { ChatHistory } from "@/lib/types";
 
 type ChatLine = { role: "user" | "assistant"; text: string };
@@ -36,6 +37,8 @@ export function GrandmaChat() {
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [history, setHistory] = useState<ChatHistory>([]);
   const [draft, setDraft] = useState("");
+  // A minute of slack in case the browser clock runs ahead of the server's.
+  const [visitStart] = useState(() => Date.now() - 60_000);
 
   const chat = useMutation({
     mutationFn: (message: string) => api.chat(history, message),
@@ -101,6 +104,8 @@ export function GrandmaChat() {
           )}
         </div>
       )}
+
+      <ApprovalUpdates since={visitStart} />
 
       <form onSubmit={onSubmit} className="flex gap-3">
         <Input

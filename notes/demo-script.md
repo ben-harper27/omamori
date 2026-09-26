@@ -9,7 +9,7 @@ Record at 1080p, screen capture of https://omamori-tokyo.vercel.app plus a termi
 - [ ] Clear the payment log if needed (fresh Neon rows make the story cleaner)
 - [ ] World ID sandbox open in a second tab, logged in as the family approver
 - [ ] Etherscan tab ready for the beat 4 transaction
-- [ ] Two windows side by side: https://omamori-tokyo.vercel.app (Obaachan) and /family (Family). Keep /family open: it polls World ID, which is what completes an approved payment.
+- [ ] Two windows side by side: https://omamori-tokyo.vercel.app (Obaachan) and /family (Family). Either page completes an approved payment (both poll World ID).
 
 ## 0:00–0:25 Hook
 
@@ -42,7 +42,7 @@ Click **Taxi to the airport**.
 "8 USDC is over the family's approval threshold, so the payment pauses. The family sees exactly what is being approved, and confirms with World ID."
 
 1. Approvals card shows **8 USDC to taxi.omamori-demo.eth · Large payment**. Click **Review with World ID**, **deny**. Log shows **Family denied**, nothing paid.
-2. Ask again, this time **approve**. Log shows **Family approved**, then **Paid** with a tx link.
+2. Ask again, this time **approve**. Obaachan's page shows **"Your family said yes, your taxi is booked and paid"**; the family log shows **Family approved**, then **Paid** with a tx link.
 
 "The backend validates World's token and checks it came from the approver named in ENS. Each approval is bound to one payment's exact terms, can be used once, and expires in ten minutes."
 
