@@ -18,3 +18,8 @@ Private keys live in `.env` only.
 - Buyer hook: `client.onBeforePaymentCreation` returning `{ abort: true }` refuses before signing
 - x402 client has its own default spend cap of $1 per payment; raise with `client.setSpendControls` for the 8 USDC taxi
 
+
+## World ID for Agents (sandbox)
+
+- Client registered, auth `client_secret_basic`, redirect `https://omamori-tokyo.vercel.app/auth/world/callback` (sector for pairwise `sub`)
+- Family approver sub: `QMFCRPDOALRZ2ZGNRMO6IB4M2GDLLFCMZZ3JK5AGUSFMBH22LT2A` (goes in `omamori.approver`)
