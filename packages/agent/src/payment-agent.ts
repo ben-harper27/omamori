@@ -64,21 +64,25 @@ export class PaymentAgent {
     return this.sendPayment(request, terms, gate!, client, payload, approvalId);
   }
 
-  payments(): PaymentRecord[] {
+  payments(): Promise<PaymentRecord[]> {
     return this.deps.ledger.list();
   }
 
-  payment(id: string): PaymentRecord | null {
+  payment(id: string): Promise<PaymentRecord | null> {
     return this.deps.ledger.get(id);
+  }
+
+  approvals(): Promise<PendingApproval[]> {
+    return this.deps.approvals.list();
   }
 
   async processApprovals(): Promise<void> {
     const { approvals, ledger, world } = this.deps;
     if (!world) return;
-    for (const approval of approvals.list()) {
-      const record = ledger.findByApproval(approval.id);
+    for (const approval of await approvals.list()) {
+      const record = await ledger.findByApproval(approval.id);
       if (!record) continue;
-      const current = approval.status === "pending" ? approvals.applyPollResult(approval.id, await world.poll(approval.deviceCode)) : approval;
+      const current = approval.status === "pending" ? await approvals.applyPollResult(approval.id, await world.poll(approval.deviceCode)) : approval;
       if (!current) continue;
       await this.settleApproval(record, current);
     }
@@ -87,12 +91,12 @@ export class PaymentAgent {
   private async settleApproval(record: PaymentRecord, approval: PendingApproval): Promise<void> {
     const { ledger } = this.deps;
     if (approval.status === "approved") {
-      ledger.updateOutcome(record.id, "approved", "Family approved via World ID");
+      await ledger.updateOutcome(record.id, "approved", "Family approved via World ID");
       await this.purchase({ url: record.url, sellerName: record.sellerName.replace(/^unverified:/, "") }, approval.id);
     } else if (approval.status === "expired") {
-      ledger.updateOutcome(record.id, "approval_expired", "Family approval expired; nothing was paid");
+      await ledger.updateOutcome(record.id, "approval_expired", "Family approval expired; nothing was paid");
     } else if (approval.status !== "pending") {
-      ledger.updateOutcome(record.id, "approval_denied", `Family approval ${approval.status}: ${approval.statusDetail ?? ""}; nothing was paid`);
+      await ledger.updateOutcome(record.id, "approval_denied", `Family approval ${approval.status}: ${approval.statusDetail ?? ""}; nothing was paid`);
     }
   }
 
@@ -109,8 +113,8 @@ export class PaymentAgent {
       readPolicy(ensClient, agentName),
       screener.screen(terms, typedData, account.address, website),
     ]);
-    const decision = decide({ terms, policy, monthSpend: ledger.monthSpend(), screening });
-    if (decision.outcome === "ask_family" && approvalId && approvals.consume(approvalId, terms)) {
+    const decision = decide({ terms, policy, monthSpend: await ledger.monthSpend(), screening });
+    if (decision.outcome === "ask_family" && approvalId && (await approvals.consume(approvalId, terms))) {
       return { policy, screening, decision: { ...decision, outcome: "pay", reason: `Family approved via World ID (${decision.reason})` } };
     }
     return { policy, screening, decision };
@@ -121,16 +125,16 @@ export class PaymentAgent {
     const base = { url: request.url, sellerName: terms.sellerName, payTo: terms.payTo, amount: terms.amount, rule: decision.rule, details: decision.details, screening, txHash: null };
 
     if (decision.outcome === "refuse") {
-      return { record: this.deps.ledger.record({ ...base, outcome: "refused", reason: decision.reason, approvalId }), approval: null };
+      return { record: await this.deps.ledger.record({ ...base, outcome: "refused", reason: decision.reason, approvalId }), approval: null };
     }
     if (approvalId || !this.deps.world || !policy) {
       const reason = approvalId ? "Family approval does not match these payment terms" : "Family approval is unavailable";
-      return { record: this.deps.ledger.record({ ...base, outcome: "refused", reason, approvalId }), approval: null };
+      return { record: await this.deps.ledger.record({ ...base, outcome: "refused", reason, approvalId }), approval: null };
     }
 
     const authorization = await this.deps.world.startApproval();
-    const approval = this.deps.approvals.create(terms, decision.reason, policy.approver, authorization);
-    const record = this.deps.ledger.record({ ...base, outcome: "awaiting_approval", reason: decision.reason, approvalId: approval.id });
+    const approval = await this.deps.approvals.create(terms, decision.reason, policy.approver, authorization);
+    const record = await this.deps.ledger.record({ ...base, outcome: "awaiting_approval", reason: decision.reason, approvalId: approval.id });
     return { record, approval };
   }
 
@@ -149,7 +153,7 @@ export class PaymentAgent {
     if (response.status !== 200 || !receipt?.success) {
       return this.fail(request, terms, `Seller rejected payment (${response.status}): ${await response.text()}`, gate.screening);
     }
-    const record = this.deps.ledger.record({
+    const record = await this.deps.ledger.record({
       url: request.url,
       sellerName: terms.sellerName,
       payTo: terms.payTo,
@@ -165,8 +169,8 @@ export class PaymentAgent {
     return { record, approval: null };
   }
 
-  private fail(request: PurchaseRequest, terms: PaymentTerms, reason: string, screening: Screening | null = null): PurchaseResult {
-    const record = this.deps.ledger.record({
+  private async fail(request: PurchaseRequest, terms: PaymentTerms, reason: string, screening: Screening | null = null): Promise<PurchaseResult> {
+    const record = await this.deps.ledger.record({
       url: request.url,
       sellerName: terms.sellerName,
       payTo: terms.payTo,

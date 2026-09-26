@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { PaymentTerms } from "../../shared/src";
 import { APPROVAL_WINDOW_MS, ApprovalStore } from "./approvals";
+import { createTestDb } from "./test-db";
 import type { DeviceAuthorization } from "./world-approval";
 
 const APPROVER = "family-sub";
@@ -23,63 +24,63 @@ const authorization: DeviceAuthorization = {
   interval: 5,
 };
 
-function pendingTaxi() {
-  const store = new ApprovalStore();
-  const approval = store.create(taxi, "Large payment", APPROVER, authorization, T0);
+async function pendingTaxi() {
+  const store = new ApprovalStore(await createTestDb());
+  const approval = await store.create(taxi, "Large payment", APPROVER, authorization, T0);
   return { store, id: approval.id };
 }
 
 describe("ApprovalStore", () => {
-  test("approved by the ENS approver can be consumed exactly once", () => {
-    const { store, id } = pendingTaxi();
-    store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
-    expect(store.consume(id, taxi, T0 + 2000)).toBe(true);
-    expect(store.consume(id, taxi, T0 + 3000)).toBe(false);
+  test("approved by the ENS approver can be consumed exactly once", async () => {
+    const { store, id } = await pendingTaxi();
+    await store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
+    expect(await store.consume(id, taxi, T0 + 2000)).toBe(true);
+    expect(await store.consume(id, taxi, T0 + 3000)).toBe(false);
   });
 
-  test("approval cannot be replayed for different or larger terms", () => {
-    const { store, id } = pendingTaxi();
-    store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
-    expect(store.consume(id, { ...taxi, amount: 20_000_000n }, T0 + 2000)).toBe(false);
-    expect(store.consume(id, { ...taxi, payTo: "0x000000000000000000000000000000000000dEaD" }, T0 + 2000)).toBe(false);
+  test("approval cannot be replayed for different or larger terms", async () => {
+    const { store, id } = await pendingTaxi();
+    await store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
+    expect(await store.consume(id, { ...taxi, amount: 20_000_000n }, T0 + 2000)).toBe(false);
+    expect(await store.consume(id, { ...taxi, payTo: "0x000000000000000000000000000000000000dEaD" }, T0 + 2000)).toBe(false);
   });
 
-  test("approval by a different World ID is treated as denied", () => {
-    const { store, id } = pendingTaxi();
-    const approval = store.applyPollResult(id, { status: "approved", approverSub: "stranger", authTime: 0 }, T0 + 1000);
+  test("approval by a different World ID is treated as denied", async () => {
+    const { store, id } = await pendingTaxi();
+    const approval = await store.applyPollResult(id, { status: "approved", approverSub: "stranger", authTime: 0 }, T0 + 1000);
     expect(approval?.status).toBe("denied");
-    expect(store.consume(id, taxi, T0 + 2000)).toBe(false);
+    expect(await store.consume(id, taxi, T0 + 2000)).toBe(false);
   });
 
-  test("denied approval cannot be consumed", () => {
-    const { store, id } = pendingTaxi();
-    const approval = store.applyPollResult(id, { status: "denied", error: "access_denied" }, T0 + 1000);
+  test("denied approval cannot be consumed", async () => {
+    const { store, id } = await pendingTaxi();
+    const approval = await store.applyPollResult(id, { status: "denied", error: "access_denied" }, T0 + 1000);
     expect(approval?.status).toBe("denied");
-    expect(store.consume(id, taxi, T0 + 2000)).toBe(false);
+    expect(await store.consume(id, taxi, T0 + 2000)).toBe(false);
   });
 
-  test("pending approval expires after the window", () => {
-    const { store, id } = pendingTaxi();
-    expect(store.get(id, T0 + APPROVAL_WINDOW_MS)?.status).toBe("expired");
+  test("pending approval expires after the window", async () => {
+    const { store, id } = await pendingTaxi();
+    expect((await store.get(id, T0 + APPROVAL_WINDOW_MS))?.status).toBe("expired");
   });
 
-  test("approved but unused approval expires and cannot be consumed late", () => {
-    const { store, id } = pendingTaxi();
-    store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
-    expect(store.consume(id, taxi, T0 + APPROVAL_WINDOW_MS + 1)).toBe(false);
-    expect(store.get(id, T0 + APPROVAL_WINDOW_MS + 1)?.status).toBe("expired");
+  test("approved but unused approval expires and cannot be consumed late", async () => {
+    const { store, id } = await pendingTaxi();
+    await store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
+    expect(await store.consume(id, taxi, T0 + APPROVAL_WINDOW_MS + 1)).toBe(false);
+    expect((await store.get(id, T0 + APPROVAL_WINDOW_MS + 1))?.status).toBe("expired");
   });
 
-  test("cancelled approval ignores a later approval", () => {
-    const { store, id } = pendingTaxi();
-    store.cancel(id);
-    const approval = store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
+  test("cancelled approval ignores a later approval", async () => {
+    const { store, id } = await pendingTaxi();
+    await store.cancel(id);
+    const approval = await store.applyPollResult(id, { status: "approved", approverSub: APPROVER, authTime: 0 }, T0 + 1000);
     expect(approval?.status).toBe("cancelled");
-    expect(store.consume(id, taxi, T0 + 2000)).toBe(false);
+    expect(await store.consume(id, taxi, T0 + 2000)).toBe(false);
   });
 
-  test("pending poll results leave the approval pending", () => {
-    const { store, id } = pendingTaxi();
-    expect(store.applyPollResult(id, { status: "pending" }, T0 + 1000)?.status).toBe("pending");
+  test("pending poll results leave the approval pending", async () => {
+    const { store, id } = await pendingTaxi();
+    expect((await store.applyPollResult(id, { status: "pending" }, T0 + 1000))?.status).toBe("pending");
   });
 });

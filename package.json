@@ -7,11 +7,13 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@types/bun": "latest",
     "typescript": "^5.9.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@x402/core": "2.27.0",
     "@x402/evm": "2.27.0",
     "@x402/fetch": "2.27.0",

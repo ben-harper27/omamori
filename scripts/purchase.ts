@@ -29,10 +29,10 @@ if (approval) {
     while (current.outcome === "awaiting_approval") {
       await Bun.sleep(5000);
       await agent.processApprovals();
-      current = agent.payment(record.id) ?? current;
+      current = (await agent.payment(record.id)) ?? current;
     }
     show("Decision", `${current.outcome}: ${current.reason}`);
-    const followUp = agent.payments().find((p) => p.approvalId === approval.id && p.id !== record.id);
+    const followUp = (await agent.payments()).find((p) => p.approvalId === approval.id && p.id !== record.id);
     if (followUp) {
       show("Follow-up", `${followUp.outcome}: ${followUp.reason}`);
       if (followUp.txHash) show("Tx", `https://sepolia.basescan.org/tx/${followUp.txHash}`);

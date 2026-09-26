@@ -1,5 +1,3 @@
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
 import { createPublicClient, createWalletClient, http, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
@@ -7,6 +5,7 @@ import { InterceptaClient } from "../../shared/src";
 import { ApprovalStore } from "./approvals";
 import { Assistant } from "./assistant";
 import { config } from "./config";
+import { createNeonClient } from "./db";
 import { PaymentLedger } from "./ledger";
 import { PaymentAgent } from "./payment-agent";
 import { PaymentScreener } from "./screening";
@@ -18,14 +17,14 @@ function createEnsClient(): PublicClient {
 }
 
 export function createPaymentAgent(): PaymentAgent {
-  mkdirSync(dirname(config.databasePath), { recursive: true });
+  const sql = createNeonClient(config.databaseUrl);
   return new PaymentAgent({
     ensClient: createEnsClient(),
     agentName: config.agentName,
     account: privateKeyToAccount(config.agentPrivateKey),
     screener: new PaymentScreener(config.interceptaApiKey ? new InterceptaClient(config.interceptaApiKey) : null),
-    ledger: new PaymentLedger(config.databasePath),
-    approvals: new ApprovalStore(config.databasePath),
+    ledger: new PaymentLedger(sql),
+    approvals: new ApprovalStore(sql),
     world: config.worldClientId ? new WorldApprovalClient(config.worldClientId, config.worldClientSecret) : null,
   });
 }
@@ -41,3 +40,4 @@ export function createAssistant(paymentAgent: PaymentAgent): Assistant {
 
 export { PaymentAgent } from "./payment-agent";
 export { config } from "./config";
+export { createNeonClient, ensureSchema } from "./db";

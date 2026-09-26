@@ -13,7 +13,7 @@ You can order from the sellers listed by list_sellers and pay them with the purc
 You never decide whether a payment is allowed: the purchase tool applies the family's rules and safety screening, and reports whether it paid, refused, or is waiting for a family member to approve.
 Report that outcome honestly and simply, including the reason. If it is waiting for approval, say a family member has been asked to approve.
 If she asks you to change your spending limit, use update_my_spending_limit and tell her plainly what happened.
-Keep replies short and warm. Show prices in yen as well as USDC (1 USDC is about 150 yen).`;
+Keep replies short and warm. Show prices in USDC.`;
 
 function describePurchase(result: Awaited<ReturnType<PaymentAgent["purchase"]>>): string {
   const { record, approval } = result;

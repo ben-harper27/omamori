@@ -1,5 +1,5 @@
-import { Database } from "bun:sqlite";
 import type { Screening } from "../../shared/src";
+import type { SqlClient } from "./db";
 
 export type PaymentOutcome = "paid" | "refused" | "awaiting_approval" | "approved" | "approval_denied" | "approval_expired" | "failed";
 
@@ -21,7 +21,7 @@ export type PaymentRecord = {
 
 type Row = {
   id: string;
-  created_at: number;
+  created_at: number | string;
   url: string;
   seller_name: string;
   pay_to: string;
@@ -38,7 +38,7 @@ type Row = {
 function fromRow(row: Row): PaymentRecord {
   return {
     id: row.id,
-    createdAt: row.created_at,
+    createdAt: Number(row.created_at),
     url: row.url,
     sellerName: row.seller_name,
     payTo: row.pay_to,
@@ -59,30 +59,11 @@ function startOfMonthUtc(now: number): number {
 }
 
 export class PaymentLedger {
-  private readonly db: Database;
+  constructor(private readonly sql: SqlClient) {}
 
-  constructor(path = ":memory:") {
-    this.db = new Database(path, { create: true });
-    this.db.run(`CREATE TABLE IF NOT EXISTS payments (
-      id TEXT PRIMARY KEY,
-      created_at INTEGER NOT NULL,
-      url TEXT NOT NULL,
-      seller_name TEXT NOT NULL,
-      pay_to TEXT NOT NULL,
-      amount TEXT NOT NULL,
-      outcome TEXT NOT NULL,
-      rule INTEGER,
-      reason TEXT NOT NULL,
-      details TEXT NOT NULL,
-      screening TEXT,
-      tx_hash TEXT,
-      approval_id TEXT
-    )`);
-  }
-
-  record(entry: Omit<PaymentRecord, "id" | "createdAt">, now = Date.now()): PaymentRecord {
+  async record(entry: Omit<PaymentRecord, "id" | "createdAt">, now = Date.now()): Promise<PaymentRecord> {
     const record: PaymentRecord = { id: crypto.randomUUID(), createdAt: now, ...entry };
-    this.db.query(`INSERT INTO payments VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    await this.sql.query(`INSERT INTO payments VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`, [
       record.id,
       record.createdAt,
       record.url,
@@ -96,34 +77,31 @@ export class PaymentLedger {
       record.screening ? JSON.stringify(record.screening) : null,
       record.txHash,
       record.approvalId,
-    );
+    ]);
     return record;
   }
 
-  updateOutcome(id: string, outcome: PaymentOutcome, reason: string): void {
-    this.db.query(`UPDATE payments SET outcome = ?, reason = ? WHERE id = ?`).run(outcome, reason, id);
+  async updateOutcome(id: string, outcome: PaymentOutcome, reason: string): Promise<void> {
+    await this.sql.query(`UPDATE payments SET outcome = $1, reason = $2 WHERE id = $3`, [outcome, reason, id]);
   }
 
-  get(id: string): PaymentRecord | null {
-    const row = this.db.query<Row, [string]>(`SELECT * FROM payments WHERE id = ?`).get(id);
+  async get(id: string): Promise<PaymentRecord | null> {
+    const [row] = await this.sql.query<Row>(`SELECT * FROM payments WHERE id = $1`, [id]);
     return row ? fromRow(row) : null;
   }
 
-  findByApproval(approvalId: string): PaymentRecord | null {
-    const row = this.db
-      .query<Row, [string]>(`SELECT * FROM payments WHERE approval_id = ? AND outcome = 'awaiting_approval'`)
-      .get(approvalId);
+  async findByApproval(approvalId: string): Promise<PaymentRecord | null> {
+    const [row] = await this.sql.query<Row>(`SELECT * FROM payments WHERE approval_id = $1 AND outcome = 'awaiting_approval'`, [approvalId]);
     return row ? fromRow(row) : null;
   }
 
-  list(): PaymentRecord[] {
-    return this.db.query<Row, []>(`SELECT * FROM payments ORDER BY created_at DESC`).all().map(fromRow);
+  async list(): Promise<PaymentRecord[]> {
+    const rows = await this.sql.query<Row>(`SELECT * FROM payments ORDER BY created_at DESC`);
+    return rows.map(fromRow);
   }
 
-  monthSpend(now = Date.now()): bigint {
-    const rows = this.db
-      .query<{ amount: string }, [number]>(`SELECT amount FROM payments WHERE outcome = 'paid' AND created_at >= ?`)
-      .all(startOfMonthUtc(now));
+  async monthSpend(now = Date.now()): Promise<bigint> {
+    const rows = await this.sql.query<{ amount: string }>(`SELECT amount FROM payments WHERE outcome = 'paid' AND created_at >= $1`, [startOfMonthUtc(now)]);
     let total = 0n;
     for (const row of rows) total += BigInt(row.amount);
     return total;

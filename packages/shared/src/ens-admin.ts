@@ -41,7 +41,7 @@ export class EnsAdmin {
   constructor(
     private readonly publicClient: PublicClient,
     private readonly wallet: AdminWallet,
-    private readonly waitForCommitment: () => Promise<void> = () => Bun.sleep(65_000),
+    private readonly waitForCommitment: () => Promise<void> = () => new Promise((resolve) => setTimeout(resolve, 65_000)),
   ) {}
 
   get address(): Address {
