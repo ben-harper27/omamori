@@ -62,5 +62,5 @@ Agent key tried to raise `omamori.maxPerPayment` to 999 USDC; reverted onchain: 
 ## Vercel
 
 - Project `omamori-tokyo` (team benharper27s-projects), root dir `packages/dashboard`
-- Production: https://omamori-tokyo.vercel.app
+- Production: https://omamori-tokyo.vercel.app (auto-deploys on push to `main` of github.com/ben-harper27/omamori)
 - Neon Postgres `omamori-db` via Vercel Marketplace (`DATABASE_URL`)
