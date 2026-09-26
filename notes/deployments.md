@@ -12,7 +12,15 @@ Private keys live in `.env` only.
 
 Live beta addresses are in `packages/shared/src/ens.ts` (source: docs.ens.domains/learn/deployments, NOT contracts-v2 main).
 
-- Spike 1 passed on an anvil fork of Sepolia (2026-09-26). Real Sepolia run: pending Sepolia ETH on the family and agent wallets.
+- Spike 1 passed on an anvil fork and on real Sepolia (2026-09-26).
+
+| Item | Value |
+| --- | --- |
+| Parent name | `tanaka.eth` (owner: family wallet) |
+| Agent name | `obaachan.tanaka.eth` (owner: family wallet, non-transferable) |
+| tanaka.eth UserRegistry | `0xC28dD6ECE3d1501096751DE84204017566785a40` |
+| obaachan PermissionedResolver | `0x89a17b0a44E6864475960Ef88D0726397C87b729` |
+| tanaka.eth resolver | `0xbF93540aA6e812b00a8F0263e45677b800b3dB37` |
 - Registration is commit/reveal, paid in the public-mint MockUSDC (~8 USDC/yr for 5+ chars).
 - Subname is owned by the family with only ROLE_SET_RESOLVER (no CAN_TRANSFER_ADMIN), so transfers revert with `TransferDisallowed`.
 - Agent key gets ROLE_SET_TEXT on resource keccak256("description") only, via `grantSetterRoles`.
