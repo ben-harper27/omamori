@@ -44,6 +44,8 @@ export const registryAbi = parseAbi([
   "function getStatus(uint256 anyId) view returns (uint8)",
   "function getTokenId(uint256 anyId) view returns (uint256)",
   "function unsafeTransfer(address to,uint256 tokenId,bytes data)",
+  "error TransferDisallowed(uint256 tokenId,address from)",
+  "error EACUnauthorizedAccountRoles(uint256 resource,uint256 roleBitmap,address account)",
 ]);
 
 export const permissionedResolverAbi = parseAbi([
@@ -54,6 +56,7 @@ export const permissionedResolverAbi = parseAbi([
   "function grantSetterRoles(bytes setter,address account) returns (bool)",
   "function hasRoles(uint256 resource,uint256 roleBitmap,address account) view returns (bool)",
   "function multicall(bytes[] calls) returns (bytes[])",
+  "error EACUnauthorizedAccountRoles(uint256 resource,uint256 roleBitmap,address account)",
 ]);
 
 export const POLICY_KEYS = {

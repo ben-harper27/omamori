@@ -10,6 +10,14 @@ Private keys live in `.env` only.
 
 ## ENSv2 (Sepolia)
 
+Live beta addresses are in `packages/shared/src/ens.ts` (source: docs.ens.domains/learn/deployments, NOT contracts-v2 main).
+
+- Spike 1 passed on an anvil fork of Sepolia (2026-09-26). Real Sepolia run: pending Sepolia ETH on the family and agent wallets.
+- Registration is commit/reveal, paid in the public-mint MockUSDC (~8 USDC/yr for 5+ chars).
+- Subname is owned by the family with only ROLE_SET_RESOLVER (no CAN_TRANSFER_ADMIN), so transfers revert with `TransferDisallowed`.
+- Agent key gets ROLE_SET_TEXT on resource keccak256("description") only, via `grantSetterRoles`.
+- Revocation: `userRegistry.unregister(labelhash("obaachan"))` then text records resolve to null.
+
 ## x402
 
 - Protocol v2, packages `@x402/*` 2.27.0 (not the legacy `x402-*` v1 packages)
