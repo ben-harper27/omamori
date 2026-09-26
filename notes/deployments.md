@@ -32,6 +32,7 @@ Live beta addresses are in `packages/shared/src/ens.ts` (source: docs.ens.domain
 - Network `eip155:84532` (Base Sepolia), facilitator `https://x402.org/facilitator` (no key; pays gas)
 - USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (EIP-712 domain name `USDC`, version `2`)
 - Buyer hook: `client.onBeforePaymentCreation` returning `{ abort: true }` refuses before signing
+- Spike 2 passed live: first settled payment tx `0x165110342abb88c1fd342dfff32bc70b43076feb0608bc45ceb55498f999ed39` (Base Sepolia)
 - x402 client has its own default spend cap of $1 per payment; raise with `client.setSpendControls` for the 8 USDC taxi
 
 
