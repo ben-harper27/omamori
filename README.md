@@ -107,8 +107,14 @@ cd packages/dashboard && bun run dev
 
 ## Team
 
-_TBD: names and social handles._
+Ben Harper (solo), GitHub [@ben-harper27](https://github.com/ben-harper27).
 
 ## AI tools
 
-This project was built with Claude Code (Anthropic), working from the spec in [notes/spec.md](notes/spec.md). The human set the product, architecture and sponsor strategy, made the decisions at each step, ran the browser-only steps (World portal, faucets, Vercel/Neon terms) and reviewed the results. Claude Code wrote essentially all of the code and docs in this repo, researched the sponsor APIs, and ran the spikes and deployments. That covers every file under `packages/` and `scripts/`, plus `README.md` and `notes/` other than `spec.md` (the human's spec). Commit history shows the incremental build. The runtime assistant inside the product uses Claude (`claude-opus-5`) via the Anthropic API ([assistant.ts](packages/agent/src/assistant.ts)).
+Built by one person with Claude Code (Anthropic) as the coding agent, working from a spec the human wrote before building ([notes/spec.md](notes/spec.md)).
+
+- **Human:** the product idea and spec; the choice of sponsors and architecture; every product and engineering decision made during the build (for example running everything on Vercel with Postgres, keeping enforcement in ENS and onchain rather than using ENS as a database, USDC-only amounts, how the scam demo should behave, rate-limiting the public API); and every real-world step (World ID portal setup and approvals, testnet funding, Vercel and Neon provisioning, publishing).
+- **Claude Code:** researched the sponsor APIs, and wrote the code, tests, scripts and docs in `packages/`, `scripts/`, `README.md` and `notes/` (other than `spec.md`). It also ran the spikes and deployments under the human's direction.
+- **In the product:** the runtime assistant uses Claude (`claude-opus-5`) through the Anthropic API ([assistant.ts](packages/agent/src/assistant.ts)).
+
+The commit history shows the build step by step during the event.
