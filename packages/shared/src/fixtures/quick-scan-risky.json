@@ -1,0 +1,20 @@
+{
+  "toxicScore": 100,
+  "traits": [
+    {
+      "risk": 100,
+      "name": "known_scammer",
+      "description": "The address has a confirmed history of malicious activity, including scams, phishing, or other harmful behavior."
+    },
+    {
+      "risk": 100,
+      "name": "sanction_address",
+      "description": "The address is officially listed as sanctioned and poses significant legal and financial risks."
+    },
+    {
+      "risk": 100,
+      "name": "blacklist",
+      "description": "The address appears on external or internal blacklist sources due to prior involvement in high‑risk or malicious activity."
+    }
+  ]
+}

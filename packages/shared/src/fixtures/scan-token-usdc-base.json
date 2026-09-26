@@ -1,0 +1,24 @@
+{
+  "apiVersion": "2.3.1",
+  "token": {
+    "chainId": "8453",
+    "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "symbol": "USDC"
+  },
+  "trust": "whitelist",
+  "detectors": [],
+  "saleTax": {
+    "currentValue": 0,
+    "minValue": 0,
+    "maxValue": 0
+  },
+  "buyTax": {
+    "currentValue": 0,
+    "minValue": 0,
+    "maxValue": 0
+  },
+  "riskScore": 0,
+  "riskLevel": "neutral",
+  "category": "info",
+  "action": "info"
+}

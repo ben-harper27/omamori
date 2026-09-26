@@ -5,7 +5,7 @@ import { InterceptaClient, addressVerdict, signatureVerdict, tokenVerdict } from
 
 const MAINNET_BASE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CLEAN_ADDRESS = "0x8c8d0d29b1b62a8C1710A789116da5115b707616";
-const RISKY_ADDRESS = (process.env.RISKY_ADDRESS ?? "0x0d775e010f0b6c32c9468d43ba599ef47d596e47") as `0x${string}`;
+const RISKY_ADDRESS = (process.env.RISKY_ADDRESS ?? "0x098B716B8Aaf21512996dC57EB0615e2383E2f96") as `0x${string}`;
 const FIXTURE_DIR = "packages/shared/src/fixtures";
 
 const client = new InterceptaClient(process.env.INTERCEPTA_API_KEY ?? "");

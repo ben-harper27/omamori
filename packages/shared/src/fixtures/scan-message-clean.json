@@ -1,0 +1,27 @@
+{
+  "domain": {
+    "version": "2",
+    "name": "USD Coin",
+    "chainId": "8453",
+    "verifyingContract": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+  },
+  "from": "0x4f2f35d637209f38c11d35370fc1f5419e3cace1",
+  "messageType": "TransferWithAuthorization",
+  "detectors": [],
+  "riskGroup": "Low",
+  "assetsMovement": {
+    "approve": []
+  },
+  "addresses": [
+    {
+      "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "type": "eoa",
+      "detectors": []
+    },
+    {
+      "address": "0x8c8d0d29b1b62a8c1710a789116da5115b707616",
+      "type": "eoa",
+      "detectors": []
+    }
+  ]
+}

@@ -69,7 +69,8 @@ export class InterceptaClient {
   }
 
   scanTypedData(from: Address, typedData: unknown, chainId: string, website: string): Promise<SignatureScanResponse> {
-    const message = JSON.stringify(typedData, (_key, value) => (typeof value === "bigint" ? value.toString() : value));
+    // Must be sent as a JSON object: a stringified message (what the docs' `format: json` suggests) is silently scored Low.
+    const message = JSON.parse(JSON.stringify(typedData, (_key, value) => (typeof value === "bigint" ? value.toString() : value)));
     return this.request("/analysis/signature", {
       method: "POST",
       body: JSON.stringify({ from, message, chainId, website }),
