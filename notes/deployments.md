@@ -12,3 +12,9 @@ Private keys live in `.env` only.
 
 ## x402
 
+- Protocol v2, packages `@x402/*` 2.27.0 (not the legacy `x402-*` v1 packages)
+- Network `eip155:84532` (Base Sepolia), facilitator `https://x402.org/facilitator` (no key; pays gas)
+- USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (EIP-712 domain name `USDC`, version `2`)
+- Buyer hook: `client.onBeforePaymentCreation` returning `{ abort: true }` refuses before signing
+- x402 client has its own default spend cap of $1 per payment; raise with `client.setSpendControls` for the 8 USDC taxi
+
