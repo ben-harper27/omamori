@@ -40,3 +40,17 @@ Live beta addresses are in `packages/shared/src/ens.ts` (source: docs.ens.domain
 
 - Client registered, auth `client_secret_basic`, redirect `https://omamori-tokyo.vercel.app/auth/world/callback` (sector for pairwise `sub`)
 - Family approver sub: `QMFCRPDOALRZ2ZGNRMO6IB4M2GDLLFCMZZ3JK5AGUSFMBH22LT2A` (goes in `omamori.approver`)
+
+## Seller names (ENSv2 Sepolia)
+
+Registered by `scripts/setup-sellers.ts` from the family wallet (demo operator). `addr` of each points at the seller payTo.
+
+| Item | Value |
+| --- | --- |
+| Parent | `omamori-demo.eth` |
+| Resolver (shared by all sellers) | `0xAf7a49a188cC0E7376faB1f885a4e7BF8614aFa8` |
+| UserRegistry | `0x8841e409AEcC63B5539919A4D87719aaAeCf800f` |
+| Sellers | `pharmacy.omamori-demo.eth`, `grocery.omamori-demo.eth`, `taxi.omamori-demo.eth` |
+| Scam seller | `refund-desk.eth` — deliberately unregistered, so it always shows as `unverified:` |
+
+`omamori.allowlist` on `obaachan.tanaka.eth` = the three legit seller names.
