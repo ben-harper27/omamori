@@ -12,9 +12,11 @@ Record at 1080p, screen capture of https://omamori-tokyo.vercel.app plus a termi
 
 ## 0:00–0:25 Hook
 
-"In Japan, *tokushu sagi* scams took [LATEST NPA LOSS FIGURE] last year, mostly from elderly people, by talking them into sending money. As grandparents start using AI assistants to pay for things, scammers will talk to the agent instead. Prompt injection is ore-ore fraud for AI. Omamori is a payment agent that stays safe even when it is manipulated."
+"In Japan, *tokushu sagi* scams took a record 142 billion yen in 2025, nearly double the year before, and people over 65 lost six of every ten yen of it. As grandparents start using AI assistants to pay for things, scammers will talk to the agent instead. Prompt injection is ore-ore fraud for AI. Omamori is a payment agent that stays safe even when it is manipulated."
 
 Show the dashboard: chat on the left, family view on the right.
+
+Source: National Police Agency 2025 figures, via [Nippon.com](https://www.nippon.com/en/japan-data/h02795/).
 
 ## 0:25–0:55 Beat 1: everyday purchase
 

@@ -6,7 +6,7 @@ A payment agent for elderly people whose spending rules are set by their family 
 
 ## The problem
 
-Japan's *tokushu sagi* ("special fraud") scams manipulate elderly people into sending money. As they start relying on AI assistants to pay for shopping, bills and services, scammers will target the agent instead. Prompt injection is ore-ore fraud for AI. Omamori (お守り, a protective charm) makes the agent safe to manipulate: the LLM can propose payments, but it has no path to money except through rules the family controls.
+Japan's *tokushu sagi* ("special fraud") scams manipulate elderly people into sending money. Losses hit a record ¥142.3 billion in 2025, nearly double 2024, and people aged 65 and over accounted for 59.2% of them ([National Police Agency figures via Nippon.com](https://www.nippon.com/en/japan-data/h02795/)). As they start relying on AI assistants to pay for shopping, bills and services, scammers will target the agent instead. Prompt injection is ore-ore fraud for AI. Omamori (お守り, a protective charm) makes the agent safe to manipulate: the LLM can propose payments, but it has no path to money except through rules the family controls.
 
 ## How it works
 
